@@ -2,9 +2,33 @@ import tarefas
 import utils 
 import database as db
 from datetime import datetime as dt
+import customtkinter as ctk
+import locale
 
 class Ui:
     t = tarefas.Tarefas()
+    locale.setlocale(locale.LC_TIME, "pt_BR.UTF-8")
+
+    def janela_principal(self):
+        # Aparência
+        ctk.set_appearance_mode('dark')
+        ctk.set_default_color_theme('blue')
+
+        # Janela principal
+        app = ctk.CTk()
+        app.title("TO-DO List")
+        app.geometry("800x600")
+
+        frame_titulo = ctk.CTkFrame(app, fg_color='transparent')
+        frame_titulo.pack(pady= 10)
+
+        label_titulo = ctk.CTkLabel(frame_titulo, text= '📝 TO-DO List', font= ("Arial", 26, 'bold'))
+        label_titulo.pack()
+
+        label_subtitulo = ctk.CTkLabel(frame_titulo, text="Gerenciador de texto inteligente", font=("Arial", 14))
+        label_subtitulo.pack()
+
+        app.mainloop()
 
     def print_marcar(self):       
         p = int(input('Qual tarefa quer marcar? '))

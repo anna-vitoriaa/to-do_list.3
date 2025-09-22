@@ -4,11 +4,8 @@ from datetime import datetime
 
 ui = UI.Ui()
 t = ui.t
-locale.setlocale(locale.LC_TIME, "pt_BR.UTF-8")
-dia_semana = datetime.today().strftime("%a").upper()
 
 print('='* 5, ' TODO LIST ', '='*5)
-print(datetime.today().strftime('%d/%m/%Y'), "\t", dia_semana)
 
 while True:
     t.mostrar_tarefas()

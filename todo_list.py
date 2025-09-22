@@ -7,6 +7,8 @@ t = ui.t
 
 print('='* 5, ' TODO LIST ', '='*5)
 
+ui.janela_principal()
+
 while True:
     t.mostrar_tarefas()
     op = int(input("\n1\tMarcar\n2\tMenu\n0\tSair\n"))

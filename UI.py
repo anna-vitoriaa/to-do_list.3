@@ -4,6 +4,7 @@ import database as db
 from datetime import datetime as dt
 import customtkinter as ctk
 import locale
+from tkcalendar import DateEntry
 
 class Ui:
     t = tarefas.Tarefas()
@@ -11,7 +12,7 @@ class Ui:
 
     def janela_principal(self):
         # Aparência
-        ctk.set_appearance_mode('dark')
+        ctk.set_appearance_mode('light')
         ctk.set_default_color_theme('blue')
 
         # Janela principal
@@ -27,6 +28,24 @@ class Ui:
 
         label_subtitulo = ctk.CTkLabel(frame_titulo, text="Gerenciador de texto inteligente", font=("Arial", 14))
         label_subtitulo.pack()
+
+        # Adicionar tarefas
+        frame_add = ctk.CTkFrame(app, corner_radius= 15)
+        frame_add.pack(pady = 20, padx = 20, fill = 'x')
+
+        label_add = ctk.CTkLabel(frame_add, text= "+ Adicionar tarefa", font=('Arial', 20, 'bold'))
+        label_add.grid(row=0, column=0, columnspan=3, sticky='w', pady=10, padx=10)
+
+        entry_nome = ctk.CTkEntry(frame_add, placeholder_text="Nome da tarefa...", font=("Arial", 18))
+        entry_nome.grid(row=1, column=0, columnspan=3, sticky='ew', padx=10, pady=10)
+
+        entry_data = DateEntry(frame_add, date_pattern= 'dd/MM/yyyy', width=14, font=('Arial', 13))
+        entry_data.grid(row=1, column=4, pady=10, padx=10)
+
+        btt_add = ctk.CTkButton(frame_add, text='Adicionar')
+        btt_add.grid(row=1, column= 5, padx=10, pady=10)
+
+        frame_add.grid_columnconfigure(0, weight=1)
 
         app.mainloop()
 

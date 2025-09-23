@@ -18,7 +18,7 @@ class Ui:
         # Janela principal
         app = ctk.CTk()
         app.title("TO-DO List")
-        app.geometry("800x600")
+        app.geometry("900x600")
 
         frame_titulo = ctk.CTkFrame(app, fg_color='transparent')
         frame_titulo.pack(pady= 10)
@@ -46,6 +46,33 @@ class Ui:
         btt_add.grid(row=1, column= 5, padx=10, pady=10)
 
         frame_add.grid_columnconfigure(0, weight=1)
+
+        # Filtrar Tarefas
+        frame_filtro = ctk.CTkFrame(app, corner_radius= 15)
+        frame_filtro.pack(pady=20, padx=20, fill='x')
+
+        label_filtro = ctk.CTkLabel(frame_filtro, text="🔍 Filtrar Tarefas", font=("Arial", 20, 'bold'))
+        label_filtro.grid(row=0, column=0, columnspan=3, sticky='w', padx=10, pady=10)
+
+        btt_todas = ctk.CTkButton(frame_filtro, text="Todas", corner_radius=15, fg_color="#012E40")
+        btt_todas.grid(row=1, column=0, padx=10, pady=10)
+        btt_pendentes = ctk.CTkButton(frame_filtro, text="Pendentes", corner_radius=15, fg_color="#D1B40D")
+        btt_pendentes.grid(row=1, column=1, padx=7, pady=7)
+        btt_concluidas = ctk.CTkButton(frame_filtro, text="Concluídas", corner_radius=15, fg_color="#024E0C")
+        btt_concluidas.grid(row=1, column=2, padx=7, pady=7)
+
+        entry_data = DateEntry(frame_filtro, date_pattern= 'dd/MM/yyyy', width=14, font=('Arial', 13))
+        entry_data.grid(row=1, column=3, pady=7, padx=7)
+        btt_limpar = ctk.CTkButton(frame_filtro, text="🧹 Limpar", corner_radius=15, fg_color="#661212")
+        btt_limpar.grid(row=1, column=4, padx=7, pady=7) 
+
+        frame_tarefa = ctk.CTkFrame(app, corner_radius=15)
+        frame_tarefa.pack(pady=20, padx=20, fill='both', expand=True)
+
+        label_vazio = ctk.CTkLabel(frame_tarefa, text="Nenhuma tarefa encontrada!", font=("Arial", 20, 'bold'), justify= 'center')
+        label_vazio_sub = ctk.CTkLabel(frame_tarefa, text="Adicione uma tarefa ou mude o filtro", font=("Arial", 16), justify= 'center')
+        label_vazio.pack(pady= (30, 3))
+        label_vazio_sub.pack(pady= (0, 30))
 
         app.mainloop()
 

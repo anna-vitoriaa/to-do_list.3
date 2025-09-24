@@ -16,13 +16,6 @@ class Tarefas:
             return 'Tarefa criada'
         else: return ("A data não pode ser no passado")
 
-    def mostrar_tarefas(self):
-        print('='*23)
-        for i, v in enumerate(db.listar_tarefas_db()):
-            sts = '[x]' if v['situacao'] else '[ ]'
-            print(i+1, sts, v['nome'])
-        print('='*23)
-
     def remover_tarefa(self, id):
         try:
             db.remover_tarefas_db(id)

@@ -20,15 +20,8 @@ def listar_tarefas_db():
     tab = crs.execute('SELECT * FROM Tarefas')
     return tab.fetchall()
 
-def des_marcar_db(id):
-    crs.execute("SELECT situacao FROM Tarefas WHERE id = ?", (id,))
-    sit = crs.fetchone()
-    if sit is None: 
-        print('Tarefa não encontrada')
-        return
-    new_sit = 1 if sit[0] == 0 else 0
-
-    crs.execute("UPDATE Tarefas SET situacao = ? WHERE id = ?", (new_sit, id))
+def des_marcar_db(id, val):
+    crs.execute("UPDATE Tarefas SET situacao = ? WHERE id = ?", (val, id))
     conn.commit()
 
 def remover_tarefas_db(id):

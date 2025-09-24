@@ -26,10 +26,10 @@ class Ui:
         label_titulo = ctk.CTkLabel(frame_titulo, text= '📝 TO-DO List', font=("Arial", 26, 'bold'))
         label_titulo.pack()
 
-        label_subtitulo = ctk.CTkLabel(frame_titulo, text="Gerenciador de texto inteligente", font=("Arial", 14))
+        label_subtitulo = ctk.CTkLabel(frame_titulo, text="Gerenciador de tarefas inteligente", font=("Arial", 14))
         label_subtitulo.pack()
 
-            # Adicionar tarefas
+        # Adicionar tarefas
         frame_add = ctk.CTkFrame(self.app, corner_radius= 15)
         frame_add.pack(pady = 20, padx = 20, fill = 'x')
 
@@ -56,7 +56,7 @@ class Ui:
         label_filtro = ctk.CTkLabel(frame_filtro, text="🔍 Filtrar Tarefas", font=("Arial", 20, 'bold'))
         label_filtro.grid(row=0, column=0, columnspan=3, sticky='w', padx=10, pady=10)
 
-        btt_todas = ctk.CTkButton(frame_filtro, text="Todas", corner_radius=15, fg_color="#012E40")
+        btt_todas = ctk.CTkButton(frame_filtro, text="Todas", corner_radius=15, fg_color="#012E40", command= self.print_exibir_todas)
         btt_todas.grid(row=1, column=0, padx=10, pady=10)
         btt_pendentes = ctk.CTkButton(frame_filtro, text="Pendentes", corner_radius=15, fg_color="#D1B40D")
         btt_pendentes.grid(row=1, column=1, padx=7, pady=7)
@@ -68,25 +68,14 @@ class Ui:
         btt_limpar = ctk.CTkButton(frame_filtro, text="🧹 Limpar", corner_radius=15, fg_color="#661212")
         btt_limpar.grid(row=1, column=4, padx=7, pady=7) 
 
-        frame_tarefa = ctk.CTkFrame(self.app, corner_radius=15)
-        frame_tarefa.pack(pady=20, padx=20, fill='both', expand=True)
+        self.frame_tarefas = ctk.CTkFrame(self.app, corner_radius=15)
+        self.frame_tarefas.pack(pady=20, padx=20, fill='both', expand=True)
 
-        label_vazio = ctk.CTkLabel(frame_tarefa, text="Nenhuma tarefa encontrada!", font=("Arial", 20, 'bold'), justify= 'center')
-        label_vazio_sub = ctk.CTkLabel(frame_tarefa, text="Adicione uma tarefa ou mude o filtro", font=("Arial", 16), justify= 'center')
-        label_vazio.pack(pady= (30, 3))
-        label_vazio_sub.pack(pady= (0, 30))
+        self.print_exibir_todas()
 
     def rodar(self):
         self.app.mainloop()
 
-    def print_marcar(self):       
-        p = int(input('Qual tarefa quer marcar? '))
-        id = utils.validar_id(p, db.listar_tarefas_db())
-        if id is None:
-            print('Id inválido')
-        else: 
-            db.des_marcar_db(id)
-        return
     def print_criar(self):
         nome = self.entry_nome.get().strip()
         data_str = self.entry_data.get()
@@ -94,8 +83,39 @@ class Ui:
         else: text = self.t.criar_tarefa(nome= nome, data_str = data_str)
         self.label_return_add.grid(pady=10, padx=10, row=2, column=0, columnspan = 10)
         self.label_return_add.configure(text= text)
+        self.app.after(2000, self.label_return_add.grid_forget)
         return
-        
+    
+    def print_exibir_todas(self):
+        tarefas_lista = db.listar_tarefas_db()
+
+        for w in self.frame_tarefas.winfo_children():
+            w.destroy()
+
+        if len(tarefas_lista) == 0:
+            self.label_vazio = ctk.CTkLabel(self.frame_tarefas, text="Nenhuma tarefa encontrada!", font=("Arial", 20, 'bold'), justify= 'center')
+            self.label_vazio_sub = ctk.CTkLabel(self.frame_tarefas, text="Adicione uma tarefa ou mude o filtro", font=("Arial", 16), justify= 'center')
+            self.label_vazio.pack(pady= (30, 3))
+            self.label_vazio_sub.pack(pady= (0, 30))
+
+        if len(tarefas_lista) != 0:
+            for t in tarefas_lista:
+                subframe_tarefa = ctk.CTkFrame(self.frame_tarefas, corner_radius= 20, fg_color='transparent')
+                subframe_tarefa.pack(pady= 5, padx=5, fill='x')
+
+                check_var = ctk.BooleanVar(value=bool(t['situacao']))
+                check_nome = ctk.CTkCheckBox(subframe_tarefa, text= t['nome'], font=('Arial', 20, 'bold'),  variable=check_var, command= lambda id=t['id'], v= check_var: db.des_marcar_db(id, int(v.get())))
+                
+                check_nome.pack(side = 'left', expand=True, fill="both", anchor='w')
+                label_data = ctk.CTkLabel(subframe_tarefa, text= '| ' + t['data'], font=('Arial', 16, 'bold'))
+                label_data.pack(side = 'left', expand=True, fill="both", anchor='w')
+
+                btt_editar = ctk.CTkButton(subframe_tarefa, text="✏️ Editar", corner_radius=15, fg_color="#D1B40D")
+                btt_editar.pack(side = 'left')
+                btt_delete = ctk.CTkButton(subframe_tarefa, text="🗑️ Deletar", corner_radius=15, fg_color="#661212")
+                btt_delete.pack(side = 'left')
+        else: return
+
     def print_editar(self):
         p = int(input('Qual tarefa quer editar? '))
         try:
@@ -129,30 +149,6 @@ class Ui:
         id = utils.validar_id(o, db.listar_tarefas_db())
         if id is not None: print(self.t.remover_tarefa(id= id))
         else: print("Tarefa não encontrada")
-        return
-
-
-
-    def print_menu(self):
-        while True:
-            print('\n1\tMarcar tarefa')
-            print('2\tCriar tarefa')
-            print('3\tEditar tarefa')
-            print('4\tDeletar tarefa')
-            print('5\tMostrar tarefas')
-            print('6\tFiltrar tarefas por dia')
-            print('0\tSair')
-            op = int(input('Opção: '))
-
-            match op:
-                case 1: self.print_marcar()
-                case 2: self.print_criar()
-                case 3: self.print_editar()
-                case 4: self.print_deletar()
-                case 5: self.t.mostrar_tarefas()
-                case 6: self.print_por_dia()
-                case 0: break
-                case _: print('Opção inválida')
         return
 
     def print_por_dia(self):

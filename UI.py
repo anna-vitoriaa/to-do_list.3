@@ -7,48 +7,50 @@ import locale
 from tkcalendar import DateEntry
 
 class Ui:
-    t = tarefas.Tarefas()
-    locale.setlocale(locale.LC_TIME, "pt_BR.UTF-8")
+    def __init__(self):
+        self.t = tarefas.Tarefas()
+        locale.setlocale(locale.LC_TIME, "pt_BR.UTF-8")
 
-    def janela_principal(self):
         # Aparência
         ctk.set_appearance_mode('light')
         ctk.set_default_color_theme('blue')
 
         # Janela principal
-        app = ctk.CTk()
-        app.title("TO-DO List")
-        app.geometry("900x600")
+        self.app = ctk.CTk()
+        self.app.title("TO-DO List")
+        self.app.geometry("900x600")
 
-        frame_titulo = ctk.CTkFrame(app, fg_color='transparent')
+        frame_titulo = ctk.CTkFrame(self.app, fg_color='transparent')
         frame_titulo.pack(pady= 10)
 
-        label_titulo = ctk.CTkLabel(frame_titulo, text= '📝 TO-DO List', font= ("Arial", 26, 'bold'))
+        label_titulo = ctk.CTkLabel(frame_titulo, text= '📝 TO-DO List', font=("Arial", 26, 'bold'))
         label_titulo.pack()
 
         label_subtitulo = ctk.CTkLabel(frame_titulo, text="Gerenciador de texto inteligente", font=("Arial", 14))
         label_subtitulo.pack()
 
-        # Adicionar tarefas
-        frame_add = ctk.CTkFrame(app, corner_radius= 15)
+            # Adicionar tarefas
+        frame_add = ctk.CTkFrame(self.app, corner_radius= 15)
         frame_add.pack(pady = 20, padx = 20, fill = 'x')
 
-        label_add = ctk.CTkLabel(frame_add, text= "+ Adicionar tarefa", font=('Arial', 20, 'bold'))
+        label_add = ctk.CTkLabel(frame_add, text= "+ Adicionar tarefa", font=('Arial',20, 'bold'))
         label_add.grid(row=0, column=0, columnspan=3, sticky='w', pady=10, padx=10)
 
-        entry_nome = ctk.CTkEntry(frame_add, placeholder_text="Nome da tarefa...", font=("Arial", 18))
-        entry_nome.grid(row=1, column=0, columnspan=3, sticky='ew', padx=10, pady=10)
+        self.entry_nome = ctk.CTkEntry(frame_add, placeholder_text="Nome da tarefa...", font=("Arial", 18))
+        self.entry_nome.grid(row=1, column=0, columnspan=3, sticky='ew', padx=10, pady=10)
 
-        entry_data = DateEntry(frame_add, date_pattern= 'dd/MM/yyyy', width=14, font=('Arial', 13))
-        entry_data.grid(row=1, column=4, pady=10, padx=10)
+        self.entry_data = DateEntry(frame_add, date_pattern= 'dd/MM/yyyy', width=14, font=('Arial', 13))
+        self.entry_data.grid(row=1, column=4, pady=10, padx=10)
 
-        btt_add = ctk.CTkButton(frame_add, text='Adicionar')
+        btt_add = ctk.CTkButton(frame_add, text='Adicionar', command=self.print_criar)
         btt_add.grid(row=1, column= 5, padx=10, pady=10)
+
+        self.label_return_add = ctk.CTkLabel(frame_add, text=' ', font=("Arial", 20), justify= 'center')
 
         frame_add.grid_columnconfigure(0, weight=1)
 
         # Filtrar Tarefas
-        frame_filtro = ctk.CTkFrame(app, corner_radius= 15)
+        frame_filtro = ctk.CTkFrame(self.app, corner_radius= 15)
         frame_filtro.pack(pady=20, padx=20, fill='x')
 
         label_filtro = ctk.CTkLabel(frame_filtro, text="🔍 Filtrar Tarefas", font=("Arial", 20, 'bold'))
@@ -66,7 +68,7 @@ class Ui:
         btt_limpar = ctk.CTkButton(frame_filtro, text="🧹 Limpar", corner_radius=15, fg_color="#661212")
         btt_limpar.grid(row=1, column=4, padx=7, pady=7) 
 
-        frame_tarefa = ctk.CTkFrame(app, corner_radius=15)
+        frame_tarefa = ctk.CTkFrame(self.app, corner_radius=15)
         frame_tarefa.pack(pady=20, padx=20, fill='both', expand=True)
 
         label_vazio = ctk.CTkLabel(frame_tarefa, text="Nenhuma tarefa encontrada!", font=("Arial", 20, 'bold'), justify= 'center')
@@ -74,7 +76,8 @@ class Ui:
         label_vazio.pack(pady= (30, 3))
         label_vazio_sub.pack(pady= (0, 30))
 
-        app.mainloop()
+    def rodar(self):
+        self.app.mainloop()
 
     def print_marcar(self):       
         p = int(input('Qual tarefa quer marcar? '))
@@ -84,13 +87,15 @@ class Ui:
         else: 
             db.des_marcar_db(id)
         return
-
     def print_criar(self):
-        nome = input("Qual o nome da tarefa? ")
-        data_str = input("Qual a data? (dd/mm/yyyy ou hoje): ")
-        print(self.t.criar_tarefa(nome= nome, data_str = data_str))
+        nome = self.entry_nome.get().strip()
+        data_str = self.entry_data.get()
+        if data_str == None or nome == '': text = "Os campos não podem estar vazios"
+        else: text = self.t.criar_tarefa(nome= nome, data_str = data_str)
+        self.label_return_add.grid(pady=10, padx=10, row=2, column=0, columnspan = 10)
+        self.label_return_add.configure(text= text)
         return
-    
+        
     def print_editar(self):
         p = int(input('Qual tarefa quer editar? '))
         try:

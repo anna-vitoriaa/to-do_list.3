@@ -10,15 +10,12 @@ class Tarefas:
         self.tarefas = []
     
     def criar_tarefa(self, nome, data_str):
-        try:
-            data_str = ut.validar_data(data_str= data_str)
-            if data_str is not None:
-                db.criar_tarefa_db(nome, data_str)
-                return 'Tarefa criada'
-            else: return ("Data inválida")
-        except(ValueError):
-            print("Inválido")
-    
+        data_str = ut.validar_data(data_str= data_str)
+        if data_str is not None:
+            db.criar_tarefa_db(nome, data_str)
+            return 'Tarefa criada'
+        else: return ("A data não pode ser no passado")
+
     def mostrar_tarefas(self):
         print('='*23)
         for i, v in enumerate(db.listar_tarefas_db()):

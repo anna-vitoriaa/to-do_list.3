@@ -1,7 +1,6 @@
 import tarefas
 import utils 
 import database as db
-from datetime import datetime as dt
 import customtkinter as ctk
 import locale
 from tkcalendar import DateEntry
@@ -12,7 +11,7 @@ class Ui:
         locale.setlocale(locale.LC_TIME, "pt_BR.UTF-8")
 
         # Aparência
-        ctk.set_appearance_mode('light')
+        ctk.set_appearance_mode('light gray')
         ctk.set_default_color_theme('blue')
 
         # Janela principal
@@ -58,15 +57,15 @@ class Ui:
 
         btt_todas = ctk.CTkButton(frame_filtro, text="Todas", corner_radius=15, fg_color="#012E40", command= self.print_exibir_todas)
         btt_todas.grid(row=1, column=0, padx=10, pady=10)
-        btt_pendentes = ctk.CTkButton(frame_filtro, text="Pendentes", corner_radius=15, fg_color="#D1B40D")
+        btt_pendentes = ctk.CTkButton(frame_filtro, text="Pendentes", corner_radius=15, fg_color="#D1B40D", command= self.exibir_pendentes)
         btt_pendentes.grid(row=1, column=1, padx=7, pady=7)
-        btt_concluidas = ctk.CTkButton(frame_filtro, text="Concluídas", corner_radius=15, fg_color="#024E0C")
+        btt_concluidas = ctk.CTkButton(frame_filtro, text="Concluídas", corner_radius=15, fg_color="#024E0C", command= self.exibir_concluidas)
         btt_concluidas.grid(row=1, column=2, padx=7, pady=7)
 
-        entry_data = DateEntry(frame_filtro, date_pattern= 'dd/MM/yyyy', width=14, font=('Arial', 13))
-        entry_data.grid(row=1, column=3, pady=7, padx=7)
-        btt_limpar = ctk.CTkButton(frame_filtro, text="🧹 Limpar", corner_radius=15, fg_color="#661212")
-        btt_limpar.grid(row=1, column=4, padx=7, pady=7) 
+        self.entry_data_filtro = DateEntry(frame_filtro, date_pattern= 'dd/MM/yyyy', width=14, font=('Arial', 13))
+        self.entry_data_filtro.grid(row=1, column=3, pady=7, padx=7)
+        btt_filtrar_data = ctk.CTkButton(frame_filtro, text="Filtrar", corner_radius=15, fg_color="#011169", command= self.exibir_por_dia)
+        btt_filtrar_data.grid(row=1, column=4, padx=7, pady=7) 
 
         self.frame_tarefas = ctk.CTkFrame(self.app, corner_radius=15)
         self.frame_tarefas.pack(pady=20, padx=20, fill='both', expand=True)
@@ -86,20 +85,18 @@ class Ui:
         self.app.after(2000, self.label_return_add.grid_forget)
         return
     
-    def print_exibir_todas(self):
-        tarefas_lista = db.listar_tarefas_db()
-
+    def exibir(self, lista):
         for w in self.frame_tarefas.winfo_children():
             w.destroy()
 
-        if len(tarefas_lista) == 0:
-            self.label_vazio = ctk.CTkLabel(self.frame_tarefas, text="Nenhuma tarefa encontrada!", font=("Arial", 20, 'bold'), justify= 'center')
-            self.label_vazio_sub = ctk.CTkLabel(self.frame_tarefas, text="Adicione uma tarefa ou mude o filtro", font=("Arial", 16), justify= 'center')
-            self.label_vazio.pack(pady= (30, 3))
-            self.label_vazio_sub.pack(pady= (0, 30))
+        if len(lista) == 0:
+            label_vazio = ctk.CTkLabel(self.frame_tarefas, text="Nenhuma tarefa encontrada!", font=("Arial", 20, 'bold'), justify= 'center')
+            label_vazio_sub = ctk.CTkLabel(self.frame_tarefas, text="Adicione uma tarefa ou mude o filtro", font=("Arial", 16), justify= 'center')
+            label_vazio.pack(pady= (30, 3))
+            label_vazio_sub.pack(pady= (0, 30))
 
-        if len(tarefas_lista) != 0:
-            for t in tarefas_lista:
+        else:
+            for t in lista:
                 subframe_tarefa = ctk.CTkFrame(self.frame_tarefas, corner_radius= 20, fg_color='transparent')
                 subframe_tarefa.pack(pady= 5, padx=5, fill='x')
 
@@ -114,7 +111,29 @@ class Ui:
                 btt_editar.pack(side = 'left')
                 btt_delete = ctk.CTkButton(subframe_tarefa, text="🗑️ Deletar", corner_radius=15, fg_color="#661212")
                 btt_delete.pack(side = 'left')
-        else: return
+        return
+    
+    def print_exibir_todas(self):
+        tarefas_lista = db.listar_tarefas_db()
+        self.exibir(tarefas_lista)
+
+    def exibir_pendentes(self):
+        pendentes = [t for t in db.listar_tarefas_db() if t['situacao'] == 0]
+        self.exibir(pendentes)
+
+    def exibir_concluidas(self):
+        concluidas = [t for t in db.listar_tarefas_db() if t['situacao'] == 1]
+        self.exibir(concluidas)
+
+    def exibir_por_dia(self):
+        data = self.entry_data_filtro.get()
+        dataf = utils.validar_data(data_str= data)
+        por_dia = [t for t in db.listar_tarefas_db() if t['data'] == dataf]
+        self.exibir(por_dia)
+    
+    def limpar(self):
+        for w in self.frame_tarefas.winfo_children():
+            w.destroy()
 
     def print_editar(self):
         p = int(input('Qual tarefa quer editar? '))
@@ -150,38 +169,3 @@ class Ui:
         if id is not None: print(self.t.remover_tarefa(id= id))
         else: print("Tarefa não encontrada")
         return
-
-    def print_por_dia(self):
-        while True:
-            data = input("Qual dia quer filtrar? (dd/mm/yyyy) ")
-            dataf = utils.validar_data(data_str= data)
-            if dataf is None: print("Data inválida")
-            else: break
-
-        print('\n')
-        print("="*23)
-        formato= '%d/%m/%Y'
-        print('🗓️  Tarefas de ', dataf if dt.strptime(dataf, formato).date() != dt.today().date() else 'Hoje')
-        print("="*23)
-
-        tarefas_dia = [t for t in db.listar_tarefas_db() if t['data'] == dataf]
-        print(dataf)
-
-        if not tarefas_dia: 
-                print("Nenhuma tarefa para este dia")
-                return
-        
-        for i, t in enumerate(tarefas_dia):
-            sts = '[x]' if t['situacao'] else '[ ]'
-            print(i+1, sts, t['nome'])
-            
-            
-        total = len(tarefas_dia)
-        concluidas = sum(t['situacao'] for t in tarefas_dia)
-        print("\nTotal de tarefas para hoje: ", total)
-        print("Total de tarefas concluídas: ", concluidas)
-        print("Total de tarefas pendentes: ", total-concluidas)
-        print('='*23)
-        return
-
-    

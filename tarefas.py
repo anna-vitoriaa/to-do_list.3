@@ -24,8 +24,11 @@ class Tarefas:
             print("Inválido")
     
     def editar_tarefa(self, id, nome, data):
-        try:
+        if nome == '' or data == '':
+            return "Os campos não podem estar vazios"
+        data = ut.validar_data(data)
+        if data is None:
+            return "A data não pode ser no passado"
+        else:
             db.editar_tarefas_db(id, nome, data)
             return "Tarefa editada"
-        except(ValueError):
-            print("Inválido")

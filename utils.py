@@ -7,8 +7,3 @@ def validar_data(data_str):
         return data.strftime(formato)
     else:
         return None
-    
-def validar_id(id, lista):
-    if 0 < id <= len(lista):
-        return id
-    else: return None

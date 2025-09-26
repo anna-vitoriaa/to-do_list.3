@@ -2,8 +2,10 @@ import tarefas
 import utils 
 import database as db
 import customtkinter as ctk
+from datetime import datetime as dt
 import locale
 from tkcalendar import DateEntry
+from tkinter import messagebox as mb
 
 class Ui:
     def __init__(self):
@@ -70,6 +72,8 @@ class Ui:
         self.frame_tarefas = ctk.CTkFrame(self.app, corner_radius=15)
         self.frame_tarefas.pack(pady=20, padx=20, fill='both', expand=True)
 
+        self.label_return_edt = ctk.CTkLabel(self.app, text=' ', font=("Arial", 20), anchor='w')
+
         self.print_exibir_todas()
 
     def rodar(self):
@@ -107,9 +111,9 @@ class Ui:
                 label_data = ctk.CTkLabel(subframe_tarefa, text= '| ' + t['data'], font=('Arial', 16, 'bold'))
                 label_data.pack(side = 'left', expand=True, fill="both", anchor='w')
 
-                btt_editar = ctk.CTkButton(subframe_tarefa, text="✏️ Editar", corner_radius=15, fg_color="#D1B40D")
+                btt_editar = ctk.CTkButton(subframe_tarefa, text="✏️ Editar", corner_radius=15, fg_color="#D1B40D", command= lambda tarefa=t, frame= subframe_tarefa: self.print_editar(tarefa, frame))
                 btt_editar.pack(side = 'left')
-                btt_delete = ctk.CTkButton(subframe_tarefa, text="🗑️ Deletar", corner_radius=15, fg_color="#661212")
+                btt_delete = ctk.CTkButton(subframe_tarefa, text="🗑️ Deletar", corner_radius=15, fg_color="#661212", command= lambda id= t['id']: self.print_deletar(id))
                 btt_delete.pack(side = 'left')
         return
     
@@ -130,42 +134,45 @@ class Ui:
         dataf = utils.validar_data(data_str= data)
         por_dia = [t for t in db.listar_tarefas_db() if t['data'] == dataf]
         self.exibir(por_dia)
-    
-    def limpar(self):
-        for w in self.frame_tarefas.winfo_children():
+
+    def print_editar(self, tarefa, frame):
+        nome_antigo = tarefa['nome']
+        data_antiga = dt.strptime(utils.validar_data(tarefa['data']), '%d/%m/%Y')
+
+        for w in frame.winfo_children():
             w.destroy()
+        entry_novo_nome = ctk.CTkEntry(frame, font=("Arial", 18), width= 200)
+        entry_novo_nome.insert(0, nome_antigo)
+        entry_novo_nome.pack(side = 'left', expand=True, fill="both")
+        
+        entry_nova_data = DateEntry(frame, width=15, font=('Arial', 13))
+        entry_nova_data.set_date(data_antiga)
+        entry_nova_data.pack(side = 'left')
+        
+        btt_salvar = ctk.CTkButton(frame, text="Salvar", corner_radius=15, fg_color="#011169", command= lambda: self.salvar(tarefa['id'], entry_novo_nome.get(), entry_nova_data.get()))
+        btt_salvar.pack(side = 'left')
 
-    def print_editar(self):
-        p = int(input('Qual tarefa quer editar? '))
-        try:
-            id = utils.validar_id(p, db.listar_tarefas_db())
-            if id is not None:
-                nome = db.listar_tarefas_db()[id-1]['nome']
-                data = db.listar_tarefas_db()[id-1]['data']
-
-                print('\nNome: ', nome, '\nData: ', data)
-                o = int(input("\n1\tNome\n2\tData\nO que você quer mudar? "))
-                if 0 < o < 3:
-                    if o == 1: nome = input("Novo nome: ")
-                    else: 
-                        nova_data = input("Nova data: ")
-                        data = utils.validar_data(nova_data)
-                        print(data)
-                        if data == None:
-                            print('Formato de data inválido')
-                            return
-            else: 
-                print("Opção inválida")
-                return
-
-            print(self.t.editar_tarefa(id= id, nome= nome, data= data))
-            return
-        except(ValueError):
-            print("Tarefa não encontrada")
+        btt_cancelar = ctk.CTkButton(frame, text="Cancelar", corner_radius=15, fg_color="#001FCE", command= self.print_exibir_todas)
+        btt_cancelar.pack(side = 'left')
     
-    def print_deletar(self):
-        o = int(input('Qual tarefa quer remover? '))
-        id = utils.validar_id(o, db.listar_tarefas_db())
-        if id is not None: print(self.t.remover_tarefa(id= id))
-        else: print("Tarefa não encontrada")
-        return
+    def salvar(self, id, nome, data):
+        text = self.t.editar_tarefa(id, nome, data)
+        self.label_return_edt.pack()
+        self.label_return_edt.configure(text= text)
+        self.app.after(2000, self.label_return_edt.pack_forget)
+        self.print_exibir_todas()
+    
+    
+    def print_deletar(self, id):
+        resp = mb.askyesno("Confirmação", "Tem certeza que deseja deletar esta tarefa?")
+        if resp:
+            self.t.remover_tarefa(id)
+            text= "Tarefa removida"
+            
+        else:
+            text= "Ação Cancelada"
+
+        self.label_return_edt.configure(text= text)
+        self.app.after(2000, self.label_return_edt.pack_forget)
+        self.print_exibir_todas()    
+        
